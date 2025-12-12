@@ -1,0 +1,225 @@
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import Head from 'next/head';
+import Link from 'next/link';
+
+export default function SubjectPage() {
+  const router = useRouter();
+  const { id } = router.query;
+
+  const [subjectName, setSubjectName] = useState('');
+  const [folders, setFolders] = useState({
+    images: [],
+    pdfs: [],
+    notes: []
+  });
+  const [assignments, setAssignments] = useState([]);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  // استيراد بيانات المادة (في المستقبل من API)
+  useEffect(() => {
+    if (!id) return;
+
+    // بيانات وهمية لتجربة الواجهة
+    setSubjectName(`مادة ${id}`);
+
+    // مجلد الصور
+    setFolders({
+      images: [
+        { id: 1, name: 'lesson1.jpg', path: '/uploads/lesson1.jpg' },
+        { id: 2, name: 'notes.png', path: '/uploads/notes.png' },
+      ],
+      pdfs: [
+        { id: 1, name: 'chapter1.pdf', path: '/uploads/chapter1.pdf' },
+        { id: 2, name: 'assignment.pdf', path: '/uploads/assignment.pdf' },
+      ],
+      notes: [
+        { id: 1, title: 'ملاحظات الأسبوع الأول', content: 'هذه ملاحظات الأسبوع...' },
+        { id: 2, title: 'ملاحظات الأسبوع الثاني', content: 'هذه ملاحظات الأسبوع...' },
+      ]
+    });
+
+    // الواجبات
+    setAssignments([
+      { id: 1, title: 'واجب الرياضيات', dueDate: '2025-12-20', priority: 'high' },
+      { id: 2, title: 'واجب الفيزياء', dueDate: '2025-12-25', priority: 'medium' },
+    ]);
+  }, [id]);
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // التحقق من نوع الملف
+    const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    if (!validTypes.includes(file.type)) {
+      alert('يرجى رفع ملف من نوع JPG/PNG/PDF فقط.');
+      return;
+    }
+
+    // في الحقيقة، هنا يجب إرسال الملف إلى الخادم
+    alert(`تم رفع الملف: ${file.name}`);
+    setSelectedFile(null);
+  };
+
+  const handleCreateFolder = () => {
+    if (!newFolderName.trim()) {
+      alert('يرجى إدخال اسم المجلد');
+      return;
+    }
+    alert(`تم إنشاء المجلد: ${newFolderName}`);
+    setNewFolderName('');
+  };
+
+  return (
+    <div style={{ direction: 'rtl', fontFamily: 'sans-serif', padding: '20px', backgroundColor: '#f0f4f8', minHeight: '100vh' }}>
+      <Head>
+        <title>{subjectName} - إدارة الواجبات</title>
+        <meta charSet="utf-8" />
+      </Head>
+
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h1 style={{ color: '#1e40af' }}>{subjectName}</h1>
+        <Link href="/" style={{ color: '#1e40af', textDecoration: 'underline' }}>العودة إلى لوحة التحكم</Link>
+      </header>
+
+      {/* Upload Section */}
+      <section style={{ marginBottom: '30px', padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <h2 style={{ color: '#1e40af', marginBottom: '15px' }}>رفع ملف</h2>
+        <input
+          type="file"
+          accept=".jpg,.jpeg,.png,.pdf"
+          onChange={handleFileUpload}
+          ref={(ref) => setSelectedFile(ref)}
+          style={{ marginBottom: '10px' }}
+        />
+        <button
+          onClick={() => selectedFile && selectedFile.click()}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          اختيار ملف
+        </button>
+      </section>
+
+      {/* Folders Section */}
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+
+        {/* Images Folder */}
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ color: '#1e40af', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>📁 الصور</span>
+            <span>({folders.images.length})</span>
+          </h3>
+          <ul style={{ listStyleType: 'none', padding: 0 }}>
+            {folders.images.map((file) => (
+              <li key={file.id} style={{ padding: '8px', borderBottom: '1px solid #eee' }}>
+                <a href={file.path} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6' }}>
+                  {file.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* PDFs Folder */}
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ color: '#1e40af', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>📄 ملفات PDF</span>
+            <span>({folders.pdfs.length})</span>
+          </h3>
+          <ul style={{ listStyleType: 'none', padding: 0 }}>
+            {folders.pdfs.map((file) => (
+              <li key={file.id} style={{ padding: '8px', borderBottom: '1px solid #eee' }}>
+                <a href={file.path} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6' }}>
+                  {file.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Notes Folder */}
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ color: '#1e40af', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>📝 الملاحظات</span>
+            <span>({folders.notes.length})</span>
+          </h3>
+          <ul style={{ listStyleType: 'none', padding: 0 }}>
+            {folders.notes.map((note) => (
+              <li key={note.id} style={{ padding: '8px', borderBottom: '1px solid #eee' }}>
+                <strong>{note.title}</strong>
+                <p>{note.content.substring(0, 50)}...</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+      </section>
+
+      {/* Create New Folder */}
+      <section style={{ marginBottom: '30px', padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <h2 style={{ color: '#1e40af', marginBottom: '15px' }}>إنشاء مجلد جديد</h2>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <input
+            type="text"
+            value={newFolderName}
+            onChange={(e) => setNewFolderName(e.target.value)}
+            placeholder="اسم المجلد"
+            style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px', flex: 1 }}
+          />
+          <button
+            onClick={handleCreateFolder}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#10b981',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            إنشاء
+          </button>
+        </div>
+      </section>
+
+      {/* Assignments Section */}
+      <section style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <h2 style={{ color: '#1e40af', marginBottom: '15px' }}>📋 الواجبات</h2>
+        <ul style={{ listStyleType: 'none', padding: 0 }}>
+          {assignments.map((assign) => (
+            <li key={assign.id} style={{ padding: '12px', borderBottom: '1px solid #eee' }}>
+              <strong>{assign.title}</strong>
+              <br />
+              <small style={{ color: '#6b7280' }}>
+                تاريخ التسليم: {assign.dueDate} | الأولوية: <span style={{ color: assign.priority === 'high' ? 'red' : assign.priority === 'medium' ? 'orange' : 'green' }}>
+                  {assign.priority}
+                </span>
+              </small>
+            </li>
+          ))}
+        </ul>
+        <button style={{
+          marginTop: '15px',
+          padding: '8px 16px',
+          backgroundColor: '#8b5cf6',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer'
+        }}>
+          إضافة واجب جديد
+        </button>
+      </section>
+
+    </div>
+  );
+}
